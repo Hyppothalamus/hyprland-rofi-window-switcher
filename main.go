@@ -1,11 +1,12 @@
 package main
 
 import (
+	"Hyppothalamus/wayland-rofi-windows/icons"
+	"bytes"
 	"fmt"
 	"log"
 	"os/exec"
 	"strings"
-    "bytes"
 )
 
 type window struct {
@@ -15,6 +16,9 @@ type window struct {
 }
 
 func main() {
+
+    icons_name := icons.GetIconName("discord")
+    fmt.Printf("found icon: %s\n", icons_name)
 
     // TODO change output to spit out json
     // better interprete data

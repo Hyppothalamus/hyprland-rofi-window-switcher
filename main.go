@@ -2,10 +2,8 @@ package main
 
 import (
 	"Hyppothalamus/wayland-rofi-windows/icons"
-	"bytes"
+	"Hyppothalamus/wayland-rofi-windows/commands"
 	"fmt"
-	"log"
-	"os/exec"
 	"strings"
 )
 
@@ -19,32 +17,15 @@ func main() {
 
     // TODO change output to spit out json
     // better interprete data
-    out, err := exec.Command("hyprctl", "clients").Output()
+    windows := parseOutput(commands.Command("hyprctl clients -j"))
 
-    if err != nil {
-        log.Fatal(err)
-    }
+    window := commands.Command(fmt.Sprintf("echo -en '%s' | rofi -dmenu -p windows", genTitles(&windows)))
 
-    windows := parseOutput(string(out))
-    
-    cmd := exec.Command("sh", "-c", fmt.Sprintf("echo -en '%s' | rofi -dmenu -p windows", genTitles(&windows)))
+    class := getClassFromTitle(strings.TrimSuffix(window, "\n"), &windows)
 
-    var window bytes.Buffer
-    cmd.Stdout = &window
+    commands.Command(fmt.Sprintf("hyprctl dispatch focuswindow %s", class))
 
-    err = cmd.Run()
-
-    if err != nil {
-        log.Fatal(err)
-    }
-
-    class := getClassFromTitle(strings.TrimSuffix(window.String(), "\n"), &windows)
-
-    _, err2 := exec.Command("hyprctl", "dispatch", "focuswindow", class).Output()
-
-    if err2 != nil {
-        log.Fatal(err)
-    }
+    return
 }
 
 // TODO change to parse JSON 

@@ -17,9 +17,6 @@ type window struct {
 
 func main() {
 
-    icons_name := icons.GetIconName("discord")
-    fmt.Printf("found icon: %s\n", icons_name)
-
     // TODO change output to spit out json
     // better interprete data
     out, err := exec.Command("hyprctl", "clients").Output()
@@ -30,8 +27,7 @@ func main() {
 
     windows := parseOutput(string(out))
     
-    cmd := exec.Command("rofi", "-dmenu", "-p", "windows")
-    cmd.Stdin = strings.NewReader(genTitles(&windows))
+    cmd := exec.Command("sh", "-c", fmt.Sprintf("echo -en '%s' | rofi -dmenu -p windows", genTitles(&windows)))
 
     var window bytes.Buffer
     cmd.Stdout = &window
@@ -42,10 +38,7 @@ func main() {
         log.Fatal(err)
     }
 
-    // TODO generate icons
     class := getClassFromTitle(strings.TrimSuffix(window.String(), "\n"), &windows)
-    fmt.Printf("rofi: %q\n", string(window.Bytes()))
-    fmt.Printf("selected window %s\n", class)
 
     _, err2 := exec.Command("hyprctl", "dispatch", "focuswindow", class).Output()
 
@@ -88,7 +81,7 @@ func genTitles(windows *[]window) string {
     var result string
 
     for _, v := range(*windows) {
-        result += v.title + "\n"
+        result += "\t" + v.title + "\\0icon\\x1f" + icons.GetIconName(v.class) + "\n"
     }
 
     return result

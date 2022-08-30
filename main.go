@@ -1,9 +1,10 @@
 package main
 
 import (
-	"Hyppothalamus/wayland-rofi-windows/icons"
 	"Hyppothalamus/wayland-rofi-windows/commands"
+	"Hyppothalamus/wayland-rofi-windows/icons"
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -17,11 +18,11 @@ func main() {
 
     // TODO change output to spit out json
     // better interprete data
-    windows := parseOutput(commands.Command("hyprctl clients -j"))
+    windows := parseOutput(commands.Command("hyprctl clients"))
 
     window := commands.Command(fmt.Sprintf("echo -en '%s' | rofi -dmenu -p windows", genTitles(&windows)))
 
-    class := getClassFromTitle(strings.TrimSuffix(window, "\n"), &windows)
+    class := getClassFromTitle(strings.TrimSpace(strings.TrimSuffix(window, "\n")), &windows)
 
     commands.Command(fmt.Sprintf("hyprctl dispatch focuswindow %s", class))
 
@@ -49,7 +50,9 @@ func parseOutput(out string) []window {
                 window.title = value
                 break
             case  "workspace":
-                window.workspace = int(value[0])
+                // TODO check lengt of workspace
+                workspace, _ := strconv.Atoi(value[0:1])
+                window.workspace = workspace
                 break
             }
         }
@@ -62,7 +65,7 @@ func genTitles(windows *[]window) string {
     var result string
 
     for _, v := range(*windows) {
-        result += "\t" + v.title + "\\0icon\\x1f" + icons.GetIconName(v.class) + "\n"
+        result += " " + fmt.Sprint(v.workspace) + "\t" + v.class + " - " + v.title + "\\0icon\\x1f" + icons.GetIconName(v.class) + "\n"
     }
 
     return result
@@ -71,7 +74,7 @@ func genTitles(windows *[]window) string {
 func getClassFromTitle(title string, windows *[]window) string {
 
     for _, v := range(*windows) {
-        if v.title == title {
+        if v.title == strings.Split(title, " - ")[1] {
             return v.class
         }
     }

@@ -65,7 +65,7 @@ func genTitles(windows *[]window) string {
     var result string
 
     for _, v := range(*windows) {
-        result += " " + fmt.Sprint(v.workspace) + "\t" + v.class + " - " + v.title + "\\0icon\\x1f" + icons.GetIconName(v.class) + "\n"
+        result += " " + fmt.Sprint(v.workspace) + "\t" + strings.ToLower(v.class) + " - " + v.title + "\\0icon\\x1f" + icons.GetIconName(v.class) + "\n"
     }
 
     return result

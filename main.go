@@ -3,22 +3,27 @@ package main
 import (
 	"Hyppothalamus/wayland-rofi-windows/commands"
 	"Hyppothalamus/wayland-rofi-windows/icons"
+	"encoding/json"
 	"fmt"
-	"strconv"
 	"strings"
 )
 
+type workspace struct {
+    Id int `json:"id"`
+    Name string `json:"name"`
+}
+
 type window struct {
-    class string
-    title string
-    workspace int
+    Class string `json:"class"`
+    Title string `json:"title"`
+    Workspace workspace `json:"workspace"`
 }
 
 func main() {
 
     // TODO change output to spit out json
     // better interprete data
-    windows := parseOutput(commands.Command("hyprctl clients"))
+    windows := parseOutput(commands.Command("hyprctl clients -j"))
 
     window := commands.Command(fmt.Sprintf("echo -en '%s' | rofi -dmenu -p windows", genTitles(&windows)))
 
@@ -32,40 +37,16 @@ func main() {
 // TODO change to parse JSON 
 // this will be faster and better optimized
 func parseOutput(out string) []window {
-    strings_value := strings.Split(out, "Window")[1:]
-
-    var windows []window
-
-    for _, v := range(strings_value) {
-        window := window{}
-        for i, item := range(strings.Split(v, "\n")) {
-            if item == "" || i == 0 {continue}
-            key := strings.TrimSpace(strings.Split(item, ":")[0])
-            value := strings.TrimSpace(strings.Split(item, ":")[1])
-            switch key {
-            case "class":
-                window.class = value
-                break
-            case "title":
-                window.title = value
-                break
-            case  "workspace":
-                // TODO check lengt of workspace
-                workspace, _ := strconv.Atoi(value[0:1])
-                window.workspace = workspace
-                break
-            }
-        }
-        windows = append(windows, window)
-    }
-    return windows
+   var windows []window
+   json.Unmarshal([]byte(out), &windows)
+   return windows
 }
 
 func genTitles(windows *[]window) string {
     var result string
 
     for _, v := range(*windows) {
-        result += " " + fmt.Sprint(v.workspace) + "\t" + strings.ToLower(v.class) + " - " + v.title + "\\0icon\\x1f" + icons.GetIconName(v.class) + "\n"
+        result += " " + fmt.Sprint(v.Workspace.Id) + "\t" + strings.ToLower(v.Class) + " - " + v.Title + "\\0icon\\x1f" + icons.GetIconName(v.Class) + "\n"
     }
 
     return result
@@ -74,8 +55,8 @@ func genTitles(windows *[]window) string {
 func getClassFromTitle(title string, windows *[]window) string {
 
     for _, v := range(*windows) {
-        if v.title == strings.Split(title, " - ")[1] {
-            return v.class
+        if v.Title == strings.Split(title, " - ")[1] {
+            return v.Class
         }
     }
     return ""

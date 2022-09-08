@@ -51,7 +51,7 @@ func genTitles(windows *[]window) string {
 func getClassFromTitle(title string, windows *[]window) string {
 
     for _, v := range(*windows) {
-        if v.Title == strings.Split(title, " - ")[1] {
+        if strings.Contains(v.Title, strings.Split(title, " - ")[1]) {
             return v.Class
         }
     }

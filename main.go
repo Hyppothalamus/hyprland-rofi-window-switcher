@@ -21,8 +21,6 @@ type window struct {
 
 func main() {
 
-    // TODO change output to spit out json
-    // better interprete data
     windows := parseOutput(commands.Command("hyprctl clients -j"))
 
     window := commands.Command(fmt.Sprintf("echo -en '%s' | rofi -dmenu -p windows", genTitles(&windows)))
@@ -34,8 +32,6 @@ func main() {
     return
 }
 
-// TODO change to parse JSON 
-// this will be faster and better optimized
 func parseOutput(out string) []window {
    var windows []window
    json.Unmarshal([]byte(out), &windows)

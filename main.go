@@ -23,7 +23,7 @@ func main() {
 
     windows := parseOutput(commands.Command("hyprctl clients -j"))
 
-    window := commands.Command(fmt.Sprintf("echo -en '%s' | rofi -dmenu -p windows", genTitles(&windows)))
+    window := commands.Command(fmt.Sprintf("echo -e '%s' | rofi -dmenu -p windows", genTitles(&windows)))
 
     class := getClassFromTitle(strings.TrimSpace(strings.TrimSuffix(window, "\n")), &windows)
 
